@@ -15,27 +15,27 @@ RUN yum clean all; \
 RUN yum update -y libselinux
 
 # passwordless ssh
-RUN ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
-RUN ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key
-RUN ssh-keygen -q -N "" -t rsa -f /root/.ssh/id_rsa
-RUN cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
+RUN ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key; \
+	ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key; \
+	ssh-keygen -q -N "" -t rsa -f /root/.ssh/id_rsa; \
+	cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
 
 # java
-RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/7u79-b14/jdk-7u79-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie'
-RUN rpm -i jdk-7u79-linux-x64.rpm
-RUN rm jdk-7u79-linux-x64.rpm
+RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/7u79-b14/jdk-7u79-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie'; \
+	rpm -i jdk-7u79-linux-x64.rpm; \
+	rm jdk-7u79-linux-x64.rpm 
 
 ENV JAVA_HOME /usr/java/default
 ENV PATH $PATH:$JAVA_HOME/bin
 RUN rm /usr/bin/java && ln -s $JAVA_HOME/bin/java /usr/bin/java
 
 # download native support
-RUN mkdir -p /tmp/native
-RUN curl -L https://github.com/sequenceiq/docker-hadoop-build/releases/download/v2.7.1/hadoop-native-64-2.7.1.tgz | tar -xz -C /tmp/native
+RUN mkdir -p /tmp/native; \
+	curl -L https://github.com/sequenceiq/docker-hadoop-build/releases/download/v2.7.1/hadoop-native-64-2.7.1.tgz | tar -xz -C /tmp/native
 
 # hadoop
-RUN curl -s http://www.apache.org/dist/hadoop/common/hadoop-2.7.1/hadoop-2.7.1.tar.gz | tar -xz -C /usr/local/
-RUN cd /usr/local && ln -s ./hadoop-2.7.1 hadoop
+RUN curl -s http://www.apache.org/dist/hadoop/common/hadoop-2.7.1/hadoop-2.7.1.tar.gz | tar -xz -C /usr/local/; \
+	cd /usr/local && ln -s ./hadoop-2.7.1 hadoop
 
 ENV HADOOP_PREFIX /usr/local/hadoop
 ENV HADOOP_COMMON_HOME /usr/local/hadoop
@@ -46,24 +46,24 @@ ENV HADOOP_CONF_DIR /usr/local/hadoop/etc/hadoop
 ENV YARN_CONF_DIR $HADOOP_PREFIX/etc/hadoop
 ENV SPARK_HOME /usr/local/spark
 
-RUN sed -i '/^export JAVA_HOME/ s:.*:export JAVA_HOME=/usr/java/default\nexport HADOOP_PREFIX=/usr/local/hadoop\nexport HADOOP_HOME=/usr/local/hadoop\n:' $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh
-RUN sed -i '/^export HADOOP_CONF_DIR/ s:.*:export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop/:' $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh
+RUN sed -i '/^export JAVA_HOME/ s:.*:export JAVA_HOME=/usr/java/default\nexport HADOOP_PREFIX=/usr/local/hadoop\nexport HADOOP_HOME=/usr/local/hadoop\n:' $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh; \
+	sed -i '/^export HADOOP_CONF_DIR/ s:.*:export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop/:' $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh
 #RUN . $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh
 
-RUN mkdir $HADOOP_PREFIX/input
-RUN cp $HADOOP_PREFIX/etc/hadoop/*.xml $HADOOP_PREFIX/input
+RUN mkdir $HADOOP_PREFIX/input; \
+	cp $HADOOP_PREFIX/etc/hadoop/*.xml $HADOOP_PREFIX/input
 
 # pseudo distributed
-ADD core-site.xml.template hdfs-site.xml mapred-site.xml yarn-site.xml $HADOOP_PREFIX/etc/hadoop/
-RUN sed s/HOSTNAME/localhost/ /usr/local/hadoop/etc/hadoop/core-site.xml.template > /usr/local/hadoop/etc/hadoop/core-site.xml \
+COPY core-site.xml.template hdfs-site.xml mapred-site.xml yarn-site.xml $HADOOP_PREFIX/etc/hadoop/
+RUN sed s/HOSTNAME/localhost/ /usr/local/hadoop/etc/hadoop/core-site.xml.template > /usr/local/hadoop/etc/hadoop/core-site.xml; \
 	$HADOOP_PREFIX/bin/hdfs namenode -format
 
 # fixing the libhadoop.so like a boss
-RUN rm -rf /usr/local/hadoop/lib/native \
+RUN rm -rf /usr/local/hadoop/lib/native; \
 	mv /tmp/native /usr/local/hadoop/lib
 
 ADD ssh_config /root/.ssh/config
-RUN chmod 600 /root/.ssh/config \
+RUN chmod 600 /root/.ssh/config; \
 	chown root:root /root/.ssh/config
 
 # # installing supervisord
@@ -75,27 +75,27 @@ RUN chmod 600 /root/.ssh/config \
 # ADD supervisord.conf /etc/supervisord.conf
 
 COPY bootstrap_hadoop.sh bootstrap.sh /etc/
-RUN chown root:root /etc/bootstrap*.sh \
+RUN chown root:root /etc/bootstrap*.sh; \
 	chmod 700 /etc/bootstrap*.sh
 
 ENV BOOTSTRAP_HADOOP /etc/bootstrap_hadoop.sh
 ENV BOOTSTRAP /etc/bootstrap.sh
 
 # workingaround docker.io build error
-RUN ls -la /usr/local/hadoop/etc/hadoop/*-env.sh \
-	chmod +x /usr/local/hadoop/etc/hadoop/*-env.sh \
+RUN ls -la /usr/local/hadoop/etc/hadoop/*-env.sh; \
+	chmod +x /usr/local/hadoop/etc/hadoop/*-env.sh; \
 	ls -la /usr/local/hadoop/etc/hadoop/*-env.sh 
 
 # fix the 254 error code
-RUN sed  -i "/^[^#]*UsePAM/ s/.*/#&/"  /etc/ssh/sshd_config \
-	echo "UsePAM no" >> /etc/ssh/sshd_config \
+RUN sed  -i "/^[^#]*UsePAM/ s/.*/#&/"  /etc/ssh/sshd_config; \
+	echo "UsePAM no" >> /etc/ssh/sshd_config; \
 	echo "Port 2122" >> /etc/ssh/sshd_config
 
-RUN service sshd start && $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh && $HADOOP_PREFIX/sbin/start-dfs.sh && $HADOOP_PREFIX/bin/hdfs dfs -mkdir -p /user/root \
+RUN service sshd start && $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh && $HADOOP_PREFIX/sbin/start-dfs.sh && $HADOOP_PREFIX/bin/hdfs dfs -mkdir -p /user/root; \
 	service sshd start && $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh && $HADOOP_PREFIX/sbin/start-dfs.sh && $HADOOP_PREFIX/bin/hdfs dfs -put $HADOOP_PREFIX/etc/hadoop/ input
 
 #support for Hadoop 2.6.0
-RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.6.0-bin-hadoop2.6.tgz | tar -xz -C /usr/local/ \
+RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.6.0-bin-hadoop2.6.tgz | tar -xz -C /usr/local/; \
 	cd /usr/local && ln -s spark-1.6.0-bin-hadoop2.6 spark
 
 #RUN mkdir $SPARK_HOME/yarn-remote-client
