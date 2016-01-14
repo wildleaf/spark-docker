@@ -45,6 +45,7 @@ ENV HADOOP_YARN_HOME /usr/local/hadoop
 ENV HADOOP_CONF_DIR /usr/local/hadoop/etc/hadoop
 ENV YARN_CONF_DIR $HADOOP_PREFIX/etc/hadoop
 ENV SPARK_HOME /usr/local/spark
+ENV MONGO_HOME /usr/local/mongo
 
 RUN sed -i '/^export JAVA_HOME/ s:.*:export JAVA_HOME=/usr/java/default\nexport HADOOP_PREFIX=/usr/local/hadoop\nexport HADOOP_HOME=/usr/local/hadoop\n:' $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh; \
 	sed -i '/^export HADOOP_CONF_DIR/ s:.*:export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop/:' $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh
@@ -103,12 +104,17 @@ RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.6.0-bin-hadoop2.6.tgz |
 
 RUN $BOOTSTRAP && $HADOOP_PREFIX/bin/hadoop dfsadmin -safemode leave && $HADOOP_PREFIX/bin/hdfs dfs -put $SPARK_HOME-1.6.0-bin-hadoop2.6/lib /spark
 
-ENV PATH $PATH:$SPARK_HOME/bin:$HADOOP_PREFIX/bin
+#Add MongoDB
+RUN curl -s https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.2.1.tgz | tar -xz -C /usr/local/; \
+	cd /usr/local && ln -s mongodb-linux-x86_64-rhel62-3.2.1 mongodb; \
+	mkdir -p /data/db
+
+ENV PATH $PATH:$SPARK_HOME/bin:$HADOOP_PREFIX/bin:$MONGO_HOME/bin
 
 ENTRYPOINT ["/etc/bootstrap.sh"]
 
 # Spark and Mongo ports
-EXPOSE 8080 8081 7071 27017
+EXPOSE 8080 8081 7077 27017
 # Hdfs ports
 EXPOSE 50010 50020 50070 50075 50090 8020 9000
 # Mapred ports
