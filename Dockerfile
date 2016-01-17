@@ -79,7 +79,7 @@ COPY bootstrap_hadoop.sh bootstrap.sh /etc/
 RUN chown root:root /etc/bootstrap*.sh; \
 	chmod 700 /etc/bootstrap*.sh
 
-ENV BOOTSTRAP_HADOOP /etc/bootstrap_hadoop.sh
+#ENV BOOTSTRAP_HADOOP /etc/bootstrap_hadoop.sh
 ENV BOOTSTRAP /etc/bootstrap.sh
 
 # workingaround docker.io build error
@@ -92,8 +92,7 @@ RUN sed  -i "/^[^#]*UsePAM/ s/.*/#&/"  /etc/ssh/sshd_config; \
 	echo "UsePAM no" >> /etc/ssh/sshd_config; \
 	echo "Port 2122" >> /etc/ssh/sshd_config
 
-RUN service sshd start && $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh && $HADOOP_PREFIX/sbin/start-dfs.sh && $HADOOP_PREFIX/bin/hdfs dfs -mkdir -p /user/root; \
-	service sshd start && $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh && $HADOOP_PREFIX/sbin/start-dfs.sh && $HADOOP_PREFIX/bin/hdfs dfs -put $HADOOP_PREFIX/etc/hadoop/ input
+RUN service sshd start && $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh && $HADOOP_PREFIX/sbin/start-dfs.sh && $HADOOP_PREFIX/bin/hdfs dfs -mkdir -p /user/root && $HADOOP_PREFIX/bin/hdfs dfs -put $HADOOP_PREFIX/etc/hadoop/ input
 
 #support for Hadoop 2.6.0
 #RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.6.0-bin-hadoop2.6.tgz | tar -xz -C /usr/local/; \
@@ -103,7 +102,8 @@ RUN curl -s http://tasker.buzzsponge.com/spark/spark-1.6.0-bin-custom-spark.tgz 
 #RUN mkdir $SPARK_HOME/yarn-remote-client
 #ADD yarn-remote-client $SPARK_HOME/yarn-remote-client
 
-RUN $BOOTSTRAP && $HADOOP_PREFIX/bin/hadoop dfsadmin -safemode leave && $HADOOP_PREFIX/bin/hdfs dfs -put $SPARK_HOME/lib /spark
+#RUN $BOOTSTRAP && $HADOOP_PREFIX/bin/hadoop dfsadmin -safemode leave 
+#&& $HADOOP_PREFIX/bin/hdfs dfs -put $SPARK_HOME/lib /spark
 
 #Add MongoDB
 RUN curl -s https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.2.1.tgz | tar -xz -C /usr/local/; \
