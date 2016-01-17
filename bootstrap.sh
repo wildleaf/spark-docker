@@ -1,7 +1,8 @@
 #!/bin/bash
-export LANG="en_US.utf8"
+export LANG="en_US.utf-8"
 alias ll='ls -l --color'
 alias dut='du --max-depth=1 -h'
+export PS1="\u@\h \w> "
 
 /etc/bootstrap_hadoop.sh
 

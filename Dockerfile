@@ -2,7 +2,8 @@
 #
 # docker build -t wildleaf/spark .
 
-FROM sequenceiq/pam:centos-6.5
+#FROM sequenceiq/pam:centos-6.5
+FROM tianon/centos:6.5
 MAINTAINER Wildleaf
 
 USER root
@@ -10,7 +11,8 @@ USER root
 # install dev tools
 RUN yum clean all; \
     rpm --rebuilddb; \
-    yum install -y curl which tar sudo openssh-server openssh-clients rsync
+    yum install -y curl which tar sudo openssh-server openssh-clients rsync; \
+    yum install -y glibc-common unzip
 # update libselinux. see https://github.com/sequenceiq/hadoop-docker/issues/14
 RUN yum update -y libselinux
 

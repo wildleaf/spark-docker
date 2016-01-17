@@ -16,3 +16,5 @@ export MONGO_HOME=/usr/local/mongodb
 
 export LANG=en_US.UTF-8
 export PATH=$PATH:$SPARK_HOME/bin:$HADOOP_PREFIX/bin:$MONGO_HOME/bin
+
+export PS1="\u@\h \w> "
