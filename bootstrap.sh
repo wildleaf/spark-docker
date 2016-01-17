@@ -1,8 +1,12 @@
 #!/bin/bash
+export LANG="en_US.utf8"
+alias ll='ls -l --color'
+alias dut='du --max-depth=1 -h'
 
 /etc/bootstrap_hadoop.sh
 
 #start Mongo
+[[ ! -d /data/db ]] && mkdir -p /data/db
 $MONGO_HOME/bin/mongod &
 
 # setting spark defaults

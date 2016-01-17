@@ -21,9 +21,9 @@ RUN ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key; \
 	cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
 
 # java
-RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/7u79-b14/jdk-7u79-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie'; \
-	rpm -i jdk-7u79-linux-x64.rpm; \
-	rm jdk-7u79-linux-x64.rpm 
+RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u65-b14/jdk-8u65-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie'; \
+	rpm -i jdk-8u65-linux-x64.rpm; \
+	rm jdk-8u65-linux-x64.rpm 
 
 ENV JAVA_HOME /usr/java/default
 ENV PATH $PATH:$JAVA_HOME/bin
@@ -96,13 +96,14 @@ RUN service sshd start && $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh && $HADOOP_PRE
 	service sshd start && $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh && $HADOOP_PREFIX/sbin/start-dfs.sh && $HADOOP_PREFIX/bin/hdfs dfs -put $HADOOP_PREFIX/etc/hadoop/ input
 
 #support for Hadoop 2.6.0
-RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.6.0-bin-hadoop2.6.tgz | tar -xz -C /usr/local/; \
-	cd /usr/local && ln -s spark-1.6.0-bin-hadoop2.6 spark
+#RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.6.0-bin-hadoop2.6.tgz | tar -xz -C /usr/local/; \
+RUN curl -s http://tasker.buzzsponge.com/spark/spark-1.6.0-bin-custom-spark.tgz | tar -xz -C /usr/local/; \
+	cd /usr/local && ln -s spark-1.6.0-bin-custom-spark spark
 
 #RUN mkdir $SPARK_HOME/yarn-remote-client
 #ADD yarn-remote-client $SPARK_HOME/yarn-remote-client
 
-RUN $BOOTSTRAP && $HADOOP_PREFIX/bin/hadoop dfsadmin -safemode leave && $HADOOP_PREFIX/bin/hdfs dfs -put $SPARK_HOME-1.6.0-bin-hadoop2.6/lib /spark
+RUN $BOOTSTRAP && $HADOOP_PREFIX/bin/hadoop dfsadmin -safemode leave && $HADOOP_PREFIX/bin/hdfs dfs -put $SPARK_HOME/lib /spark
 
 #Add MongoDB
 RUN curl -s https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.2.1.tgz | tar -xz -C /usr/local/; \
