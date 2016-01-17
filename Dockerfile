@@ -110,6 +110,8 @@ RUN curl -s https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.2.1.t
 	cd /usr/local && ln -s mongodb-linux-x86_64-rhel62-3.2.1 mongodb; \
 	mkdir -p /data/db
 
+ADD bash_profile /root/.bash_profile
+
 ENV PATH $PATH:$SPARK_HOME/bin:$HADOOP_PREFIX/bin:$MONGO_HOME/bin
 
 ENTRYPOINT ["/etc/bootstrap.sh"]
