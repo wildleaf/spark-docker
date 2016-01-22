@@ -1,6 +1,5 @@
 alias ll='ls -l --color'
 alias dut='du --max-depth=1 -h'
-alias vi=vim
 
 
 export HADOOP_PREFIX=/usr/local/hadoop
