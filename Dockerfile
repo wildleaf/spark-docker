@@ -49,8 +49,8 @@ RUN mkdir $HADOOP_PREFIX/input; \
 	cp $HADOOP_PREFIX/etc/hadoop/*.xml $HADOOP_PREFIX/input
 
 # pseudo distributed
-COPY core-site.xml.template hdfs-site.xml mapred-site.xml yarn-site.xml $HADOOP_PREFIX/etc/hadoop/
-RUN sed s/HOSTNAME/localhost/ /usr/local/hadoop/etc/hadoop/core-site.xml.template > /usr/local/hadoop/etc/hadoop/core-site.xml; \
+COPY core-site.xml.template hdfs-site.xml mapred-site.xml yarn-site.xml $HADOOP_CONF_DIR/
+RUN sed s/HOSTNAME/localhost/ $HADOOP_CONF_DIR/core-site.xml.template > $HADOOP_CONF_DIR/core-site.xml; \
 	$HADOOP_PREFIX/bin/hdfs namenode -format
 
 # fixing the libhadoop.so like a boss
@@ -60,7 +60,7 @@ RUN rm -rf /usr/local/hadoop/lib/native; \
 ADD ssh_config /root/.ssh/config
 RUN chmod 600 /root/.ssh/config; \
 	chown root:root /root/.ssh/config
-	
+
 # # installing supervisord
 # RUN yum install -y python-setuptools
 # RUN easy_install pip
@@ -77,16 +77,16 @@ RUN chown root:root /etc/bootstrap*.sh; \
 ENV BOOTSTRAP /etc/bootstrap.sh
 
 # workingaround docker.io build error
-RUN ls -la /usr/local/hadoop/etc/hadoop/*-env.sh; \
-	chmod +x /usr/local/hadoop/etc/hadoop/*-env.sh; \
-	ls -la /usr/local/hadoop/etc/hadoop/*-env.sh 
+RUN ls -la $HADOOP_CONF_DIR/*-env.sh; \
+	chmod +x $HADOOP_CONF_DIR/*-env.sh; \
+	ls -la $HADOOP_CONF_DIR/*-env.sh 
 
 # fix the 254 error code
 RUN sed  -i "/^[^#]*UsePAM/ s/.*/#&/"  /etc/ssh/sshd_config; \
 	echo "UsePAM no" >> /etc/ssh/sshd_config; \
 	echo "Port 2122" >> /etc/ssh/sshd_config
 
-RUN service sshd start && $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh && $HADOOP_PREFIX/sbin/start-dfs.sh && $HADOOP_PREFIX/bin/hdfs dfs -mkdir -p /user/root && $HADOOP_PREFIX/bin/hdfs dfs -put $HADOOP_PREFIX/etc/hadoop/ input
+RUN service sshd start && $HADOOP_CONF_DIR/hadoop-env.sh && $HADOOP_PREFIX/sbin/start-dfs.sh && $HADOOP_PREFIX/bin/hdfs dfs -mkdir -p /user/root && $HADOOP_PREFIX/bin/hdfs dfs -put $HADOOP_CONF_DIR/ input
 
 #support for Hadoop 2.6.0
 #RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.6.0-bin-hadoop2.6.tgz | tar -xz -C /usr/local/; \
