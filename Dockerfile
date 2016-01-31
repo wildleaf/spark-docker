@@ -23,9 +23,9 @@ RUN ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key; \
 	cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
 
 # java
-RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u65-b14/jdk-8u65-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie'; \
-	rpm -i jdk-8u65-linux-x64.rpm; \
-	rm jdk-8u65-linux-x64.rpm 
+RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u71-b14/jdk-8u71-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie'; \
+	rpm -i jdk-8u71-linux-x64.rpm; \
+	rm jdk-8u71-linux-x64.rpm 
 
 ENV JAVA_HOME /usr/java/default
 ENV PATH $PATH:$JAVA_HOME/bin
@@ -39,14 +39,16 @@ RUN mkdir -p /tmp/native; \
 RUN curl -s http://www.apache.org/dist/hadoop/common/hadoop-2.7.1/hadoop-2.7.1.tar.gz | tar -xz -C /usr/local/; \
 	cd /usr/local && ln -s ./hadoop-2.7.1 hadoop
 
-ENV HADOOP_PREFIX=/usr/local/hadoop HADOOP_COMMON_HOME=$HADOOP_PREFIX HADOOP_HDFS_HOME=$HADOOP_PREFIX HADOOP_MAPRED_HOME=$HADOOP_PREFIX HADOOP_YARN_HOME=$HADOOP_PREFIX HADOOP_CONF_DIR=$HADOOP_PREFIX/etc/hadoop YARN_CONF_DIR=$HADOOP_PREFIX/etc/hadoop SPARK_HOME=/usr/local/spark MONGO_HOME=/usr/local/mongodb
+ENV HADOOP_PREFIX=/usr/local/hadoop 
+ENV HADOOP_COMMON_HOME=$HADOOP_PREFIX HADOOP_HDFS_HOME=$HADOOP_PREFIX HADOOP_MAPRED_HOME=$HADOOP_PREFIX HADOOP_YARN_HOME=$HADOOP_PREFIX HADOOP_CONF_DIR=$HADOOP_PREFIX/etc/hadoop 
+ENV YARN_CONF_DIR=$HADOOP_CONF_DIR SPARK_HOME=/usr/local/spark MONGO_HOME=/usr/local/mongodb
 
 RUN sed -i '/^export JAVA_HOME/ s:.*:export JAVA_HOME=/usr/java/default\nexport HADOOP_PREFIX=/usr/local/hadoop\nexport HADOOP_HOME=/usr/local/hadoop\n:' $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh; \
 	sed -i '/^export HADOOP_CONF_DIR/ s:.*:export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop/:' $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh
 #RUN . $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh
 
 RUN mkdir $HADOOP_PREFIX/input; \
-	cp $HADOOP_PREFIX/etc/hadoop/*.xml $HADOOP_PREFIX/input
+	cp $HADOOP_CONF_DIR/*.xml $HADOOP_PREFIX/input
 
 # pseudo distributed
 COPY core-site.xml.template hdfs-site.xml mapred-site.xml yarn-site.xml $HADOOP_CONF_DIR/
